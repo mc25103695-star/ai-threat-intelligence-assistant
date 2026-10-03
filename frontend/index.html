@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Powered Threat Intelligence Assistant — Analyze IPs, Domains, and URLs for cyber threats.">
+    <title>Threat Intelligence Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <header class="header" id="app-header">
+        <div class="header-left">
+            <h1 class="header-title">Threat Intelligence Assistant</h1>
+            <span class="header-subtitle">AI-Powered Threat Analysis Dashboard</span>
+        </div>
+        <div class="header-right">
+            <span class="status-dot status-dot--online" id="status-dot"></span>
+            <span class="status-text" id="status-text">System Online</span>
+        </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main" id="main-content">
+
+        <!-- ---- LEFT PANEL: Input ---- -->
+        <aside class="panel panel--input" id="input-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Indicator Analysis</h2>
+            </div>
+            <div class="panel-body">
+                <form id="analyze-form" autocomplete="off">
+                    <!-- IOC Type Dropdown -->
+                    <div class="form-group">
+                        <label class="form-label" for="ioc-type">Indicator Type</label>
+                        <select class="form-select" id="ioc-type" name="type" required>
+                            <option value="ip">IP Address</option>
+                            <option value="domain">Domain</option>
+                            <option value="url">URL</option>
+                        </select>
+                    </div>
+
+                    <!-- Input Field -->
+                    <div class="form-group">
+                        <label class="form-label" for="ioc-value">Indicator Value</label>
+                        <input
+                            class="form-input"
+                            type="text"
+                            id="ioc-value"
+                            name="indicator"
+                            placeholder="Enter IP Address, Domain, or URL"
+                            required
+                        >
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <button class="btn btn--primary" type="submit" id="analyze-btn">
+                        <span class="btn-text" id="btn-text">Analyze</span>
+                        <span class="btn-spinner hidden" id="btn-spinner"></span>
+                    </button>
+                </form>
+
+                <!-- Recent Lookups -->
+                <div class="recent-section" id="recent-section">
+                    <p class="recent-label">Recent lookups</p>
+                    <ul class="recent-list" id="recent-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <!-- Data Sources Card -->
+                <div class="sources-card" id="sources-card">
+                    <p class="recent-label">Data Sources</p>
+                    <ul class="sources-list">
+                        <li><span class="source-dot source-dot--on"></span> VirusTotal</li>
+                        <li><span class="source-dot source-dot--on"></span> AbuseIPDB</li>
+                        <li><span class="source-dot source-dot--on"></span> Gemini 2.5 Flash</li>
+                    </ul>
+                    <span class="sources-status">Connected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ---- RIGHT PANEL: Results ---- -->
+        <section class="panel panel--results" id="results-panel">
+
+            <!-- Empty State -->
+            <div class="state state--empty" id="state-empty">
+                <div class="state-icon">&#128269;</div>
+                <p class="state-title">No analysis performed yet</p>
+                <p class="state-subtitle">Enter an indicator and click <strong>Analyze</strong> to begin.</p>
+            </div>
+
+            <!-- Loading State -->
+            <div class="state state--loading hidden" id="state-loading">
+                <div class="spinner"></div>
+                <p class="state-title">Analyzing Threat Intelligence...</p>
+                <p class="state-subtitle">Querying VirusTotal, AbuseIPDB, and Gemini AI</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="alert alert--error hidden" id="state-error">
+                <div class="alert-header">
+                    <span class="alert-icon">&#9888;</span>
+                    <span class="alert-title">Analysis Failed</span>
+                </div>
+                <p class="alert-message" id="error-message"></p>
+            </div>
+
+            <!-- Results Cards -->
+            <div class="results-grid hidden" id="results-grid">
+
+                <!-- Metadata Bar -->
+                <div class="meta-bar" id="meta-bar">
+                    <span class="meta-item" id="meta-indicator"></span>
+                    <span class="meta-item" id="meta-type"></span>
+                    <span class="meta-item" id="meta-timestamp"></span>
+                    <span class="meta-source-badge" id="meta-source"></span>
+                </div>
+
+                <!-- Quick Statistics Row -->
+                <div class="quick-stats" id="quick-stats">
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-vt-detections">—</span>
+                        <span class="stat-label">VT Detections</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-abuse-score">—</span>
+                        <span class="stat-label">Abuse Score</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-reports">—</span>
+                        <span class="stat-label">Historical Reports</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-risk-score">—</span>
+                        <span class="stat-label">Risk Score</span>
+                    </div>
+                </div>
+
+                <!-- Card 1: Threat Summary -->
+                <div class="card" id="card-summary">
+                    <div class="card-header">
+                        <h3 class="card-title">Threat Summary</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="summary-text" id="summary-text"></p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Risk Assessment -->
+                <div class="card" id="card-risk">
+                    <div class="card-header">
+                        <h3 class="card-title">Risk Assessment</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="risk-row">
+                            <div class="risk-item">
+                                <span class="risk-label">Risk Level</span>
+                                <span class="risk-badge" id="risk-level"></span>
+                            </div>
+                            <div class="risk-item">
+                                <span class="risk-label">Confidence</span>
+                                <span class="risk-badge risk-badge--outline" id="risk-confidence"></span>
+                            </div>
+                            <div class="risk-item">
+                                <span class="risk-label">Risk Score</span>
+                                <span class="risk-score" id="risk-score"></span>
+                            </div>
+                        </div>
+                        <p class="risk-justification" id="risk-justification"></p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Potential Attack Types -->
+                <div class="card" id="card-attacks">
+                    <div class="card-header">
+                        <h3 class="card-title">Potential Attack Types</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="tag-group" id="attack-tags"></div>
+                        <p class="empty-note hidden" id="attacks-empty">No attack types identified — indicator appears clean.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Investigation Steps -->
+                <div class="card" id="card-investigation">
+                    <div class="card-header">
+                        <h3 class="card-title">Investigation Steps</h3>
+                    </div>
+                    <div class="card-body">
+                        <ol class="steps-list" id="investigation-list"></ol>
+                    </div>
+                </div>
+
+                <!-- Card 5: Analyst Questions -->
+                <div class="card" id="card-questions">
+                    <div class="card-header">
+                        <h3 class="card-title">Questions Analyst Should Ask</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="bullet-list" id="questions-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Card 6: Mitigation Recommendations -->
+                <div class="card" id="card-mitigations">
+                    <div class="card-header">
+                        <h3 class="card-title">Mitigation Recommendations</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="bullet-list" id="mitigations-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Card 7: AI vs Threat Intel Comparison (Compact Table) -->
+                <div class="card card--wide" id="card-comparison">
+                    <div class="card-header">
+                        <h3 class="card-title">AI vs Threat Intelligence Comparison</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="cmp-table" id="cmp-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>AI Assessment</th>
+                                    <th>VirusTotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cmp-tbody"></tbody>
+                        </table>
+                        <div class="cmp-summary" id="cmp-summary"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <span>AI Threat Intelligence Assistant &middot; v1.0.0</span>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

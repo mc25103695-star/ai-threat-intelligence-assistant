@@ -1,0 +1,15 @@
+# Core Framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+
+# Environment Variables
+python-dotenv==1.1.0
+
+# HTTP Client (for external API calls)
+httpx==0.28.1
+
+# Google Gemini AI
+google-genai==1.14.0
+
+# CORS support (for frontend-backend communication)
+# Included in FastAPI/Starlette - no extra install needed

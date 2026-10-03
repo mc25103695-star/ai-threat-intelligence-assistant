@@ -1,0 +1,44 @@
+# ==============================================
+# AI Threat Intelligence Assistant - .gitignore
+# ==============================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# ---- Virtual Environment ----
+.venv/
+venv/
+ENV/
+
+# ---- Environment Variables (SECRETS) ----
+.env
+backend/.env
+
+# ---- Test / Debug Scripts ----
+test_*.py
+debug_*.py
+
+# ---- IDE / Editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.gemini/
+
+# ---- Logs ----
+*.log
+
+# ---- OS Files ----
+desktop.ini
+ehthumbs.db
